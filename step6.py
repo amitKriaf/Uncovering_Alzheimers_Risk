@@ -12,7 +12,7 @@ df = pd.read_csv("/home/tzlilse@mta.ac.il/combined_alzheimer_dataset.csv")
 X = df.drop(columns=["has alzheimer"])
 y = df["has alzheimer"]
 
-# Split: Train (60%) / Validation (20%) / Test (20%)
+# Split: Train (80%) / Validation (10%) / Test (10%)
 X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
 X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.25, random_state=42)
 
