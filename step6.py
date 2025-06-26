@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, roc_auc_score
 from xgboost import XGBClassifier, plot_importance
 import shap
@@ -12,35 +12,28 @@ df = pd.read_csv("/home/tzlilse@mta.ac.il/combined_alzheimer_dataset.csv")
 X = df.drop(columns=["has alzheimer"])
 y = df["has alzheimer"]
 
-# Split: Train (80%) / Validation (10%) / Test (10%)
-X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
-X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.25, random_state=42)
+# Split: Train (80%) / Test (20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Compute class imbalance
+# Compute class imbalance: 0 - Healthy, 1 - Sick
 scale = (y_train == 0).sum() / (y_train == 1).sum()
 
-# Model & Grid Search
-model = XGBClassifier(use_label_encoder=False)
-'''
-param_grid = {
+# Final model with fixed hyperparameters
+model = XGBClassifier(
+    n_estimators=800,         # Number of boosting rounds (trees)
+    max_depth=7,              # Maximum depth of each tree
+    learning_rate=0.05,
+    min_child_weight=3,       # Minimum number of samples required to make a split
+    gamma=0.1,                # Minimum improvement in performance needed to split
+    subsample=0.8,            # Percent of training data used for each tree (adds randomness) - rows
+    colsample_bytree=0.7,     # Percent of features used per tree (adds randomness) - columns
+    use_label_encoder=False,  # Disable deprecated label encoder
+    scale_pos_weight=scale,   # Adjust for class imbalance
+    eval_metric='logloss'     # Metric used during training
+)
 
-    'n_estimators': [800],
-    'max_depth': [7],
-    'learning_rate': [0.05],
-    'min_child_weight': [3],
-    'gamma': [0.1],
-    'subsample': [0.8],
-    'colsample_bytree': [0.7]
-}
-
-grid_search = GridSearchCV(model, param_grid, scoring='f1', cv=3, n_jobs=1, verbose=1)
-grid_search.fit(X_train, y_train)
-best_model = grid_search.best_estimator_
-'''
-# Final training on training + validation
-X_combined = pd.concat([X_train, X_val])
-y_combined = pd.concat([y_train, y_val])
-model.fit(X_combined, y_combined)
+# Train the model on training set only
+model.fit(X_train, y_train)
 
 # Predict on test set
 y_proba = model.predict_proba(X_test)[:, 1]
@@ -54,7 +47,8 @@ print("Classification Report:\n", classification_report(y_test, y_pred, target_n
 # Confusion Matrix
 conf_mat = confusion_matrix(y_test, y_pred)
 plt.figure(figsize=(5, 4))
-sns.heatmap(conf_mat, annot=True, fmt="d", cmap="Blues", xticklabels=["Healthy", "Alzheimer"], yticklabels=["Healthy", "Alzheimer"])
+sns.heatmap(conf_mat, annot=True, fmt="d", cmap="Blues",
+            xticklabels=["Healthy", "Alzheimer"], yticklabels=["Healthy", "Alzheimer"])
 plt.title("Confusion Matrix")
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
@@ -78,7 +72,7 @@ plt.close()
 print(f"ROC AUC Score: {auc_score:.2f}")
 
 # SHAP Summary Plot
-explainer = shap.Explainer(model, X_combined)
+explainer = shap.Explainer(model, X_train)
 shap_values = explainer(X_test)
 shap.summary_plot(shap_values, X_test, show=False)
 plt.tight_layout()
