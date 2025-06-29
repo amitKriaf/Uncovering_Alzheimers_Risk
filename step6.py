@@ -26,7 +26,7 @@ model = XGBClassifier(
     min_child_weight=3,       # Minimum number of samples required to make a split
     gamma=0.1,                # Minimum improvement in performance needed to split
     subsample=0.8,            # Percent of training data used for each tree (adds randomness) - rows
-    colsample_bytree=0.7,     # Percent of features used per tree (adds randomness) - columns
+    colsample_bytree=0.8,     # Percent of features used per tree (adds randomness) - columns
     use_label_encoder=False,  # Disable deprecated label encoder
     scale_pos_weight=scale,   # Adjust for class imbalance
     eval_metric='logloss'     # Metric used during training
@@ -37,7 +37,7 @@ model.fit(X_train, y_train)
 
 # Predict on test set
 y_proba = model.predict_proba(X_test)[:, 1]
-threshold = 0.5
+threshold = 0.4 #lower means more AD diagnosis,higher means the model is more strict
 y_pred = (y_proba > threshold).astype(int)
 
 # Evaluation
