@@ -1,3 +1,4 @@
+#preparing the data for the model to train- creating the final table
 import pandas as pd
 import numpy as np
 
