@@ -8,7 +8,7 @@ from xgboost import XGBClassifier, plot_importance
 import shap
 
 # Load and prepare data
-df = pd.read_csv("/home/tzlilse@mta.ac.il/combined_alzheimer_dataset.csv")
+df = pd.read_csv("/home/amitel2@mta.ac.il/filtered_biobank_data_new.csv")
 X = df.drop(columns=["has alzheimer"])
 y = df["has alzheimer"]
 
@@ -25,8 +25,8 @@ model = XGBClassifier(
     learning_rate=0.05,
     min_child_weight=3,       # Minimum number of samples required to make a split
     gamma=0.1,                # Minimum improvement in performance needed to split
-    subsample=0.8,            # Percent of training data used for each tree (adds randomness) - rows
-    colsample_bytree=0.8,     # Percent of features used per tree (adds randomness) - columns
+    subsample=0.8,              # Percent of training data used for each tree (adds randomness) - rows
+    colsample_bytree=0.8,       # Percent of features used per tree (adds randomness) - columns
     use_label_encoder=False,  # Disable deprecated label encoder
     scale_pos_weight=scale,   # Adjust for class imbalance
     eval_metric='logloss'     # Metric used during training
@@ -37,7 +37,7 @@ model.fit(X_train, y_train)
 
 # Predict on test set
 y_proba = model.predict_proba(X_test)[:, 1]
-threshold = 0.4 #lower means more AD diagnosis,higher means the model is more strict
+threshold = 0.4
 y_pred = (y_proba > threshold).astype(int)
 
 # Evaluation
