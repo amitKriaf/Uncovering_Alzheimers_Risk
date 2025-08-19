@@ -71,6 +71,8 @@ plt.savefig("roc_curve.png")
 plt.close()
 print(f"ROC AUC Score: {auc_score:.2f}")
 
+feature_names = ["Sex","Number in household","Avg time walking","num of exercise","duration of avg workout","Duration of vigorous activity","avg time in the sun","TV time","Computer time","Phone time","sleep duration","morning/evning people","Nap during day","sleep during the day","consume coffee","any major diat change","how much their diat is divarsed","Alcohol intake frequency","skin color","number of partner in their lifetime","Applying sunscreen","Qualifications","Vegans forever","Smoking status","Ever smoked","race"," Living environment score (England)","Age"]
+X_test.columns = feature_names
 # SHAP Summary Plot
 explainer = shap.Explainer(model, X_train)
 shap_values = explainer(X_test)
@@ -94,3 +96,4 @@ plt.savefig("feature_importance_plot.png")
 plt.close()
 
 print("All plots saved successfully.")
+
